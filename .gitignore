@@ -1,0 +1,33 @@
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+/logs/
+
+# Ignore DS_Store files from Mac
+**.DS_Store
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+**/*.idea/
+*.iws
+*.iml
+*.ipr
+/out/
+
+
+#ETC
+**/logs/
+**/build/
+**/dist/
+**/node_modules/
+**/classes/
+**/out/
+**/*.ts

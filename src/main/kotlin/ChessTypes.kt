@@ -1,0 +1,4 @@
+/**
+ * @author Larry
+ */class ChessTypes {
+}

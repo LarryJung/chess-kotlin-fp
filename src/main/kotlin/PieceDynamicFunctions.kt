@@ -1,3 +1,7 @@
+import java.lang.Math.toDegrees
+import kotlin.math.atan2
+import kotlin.math.floor
+
 /**
  * @author Larry
  */
@@ -27,11 +31,11 @@ fun move(board: Board, source: String, dest: String): Board {
     tailrec fun helper(rest: List<Tile>, acc: List<Tile>): List<Tile> {
         return when {
             rest.isEmpty() -> acc
-            movable(sourceTile)(destCoord)(rest.head())
+            movableDirection(sourceTile)(destCoord)(rest.head())
                     && rest.head().coord == sourceCoord -> {
                 helper(rest.tail(), acc + Tile.Blank(rest.head().coord))
             }
-            movable(sourceTile)(destCoord)(rest.head())
+            movableDirection(sourceTile)(destCoord)(rest.head())
                     && rest.head().coord == destCoord
                     && sourceTile is Tile.ColoredPiece -> {
                 helper(rest.tail(), acc + Tile.ColoredPiece(sourceTile.color, sourceTile.piece, rest.head().coord))
@@ -42,45 +46,30 @@ fun move(board: Board, source: String, dest: String): Board {
     return Board(helper(board.tiles, emptyList()))
 }
 
-val movable: (source: Tile) -> (dest: Coord) -> (now: Tile) -> Boolean =
+val movableDirection: (source: Tile) -> (dest: Coord) -> (now: Tile) -> Boolean =
     { source ->
         { dest ->
             { now ->
                 when (source) {
                     is Tile.Blank -> true
                     is Tile.ColoredPiece -> {
-                        val vector = calculateVector(source.coord)(dest)
-                        if (vector == null) false
-                        else possibleDirections(source.piece)(source.color).find { it == vector } != null
+                        val direction = Direction.findDirection(source.coord, dest)
+                        if (direction == null) false
+                        else possibleDirections(source.piece)(source.color).find { it == direction } != null
                     }
                 }
             }
         }
     }
 
-val applyDirection: (Direction) -> (Coord) -> Coord =
-    { direction ->
-        { coord ->
-            when (direction) {
-                Direction.NORTH -> Coord(coord.rank + 1, coord.file)
-                Direction.NORTHEAST -> Coord(coord.rank + 1, coord.file + 1)
-                Direction.EAST -> Coord(coord.rank, coord.file + 1)
-                Direction.SOUTHEAST -> Coord(coord.rank - 1, coord.file + 1)
-                Direction.SOUTH -> Coord(coord.rank - 1, coord.file)
-                Direction.SOUTHWEST -> Coord(coord.rank - 1, coord.file - 1)
-                Direction.WEST -> Coord(coord.rank, coord.file - 1)
-                Direction.NORTHWEST -> Coord(coord.rank + 1, coord.file - 1)
-                Direction.NNE -> Coord(coord.rank + 2, coord.file + 1)
-                Direction.NNW -> Coord(coord.rank + 2, coord.file - 1)
-                Direction.SSE -> Coord(coord.rank - 2, coord.file + 1)
-                Direction.SSW -> Coord(coord.rank - 2, coord.file - 1)
-                Direction.EEN -> Coord(coord.rank + 1, coord.file + 2)
-                Direction.EES -> Coord(coord.rank - 1, coord.file + 2)
-                Direction.WWN -> Coord(coord.rank + 1, coord.file - 2)
-                Direction.WWS -> Coord(coord.rank - 1, coord.file - 2)
-            }
+val movable: (now: Tile) -> (neighbors: List<Tile>) -> (dest: Tile) -> Boolean = { now ->
+    { neighbors ->
+        { dest ->
+            // 각 기물에 대해서 판단
+            true
         }
     }
+}
 
 val possibleDirections: (Piece) -> (Color) -> Array<Direction> =
     { piece ->
@@ -99,10 +88,15 @@ val possibleDirections: (Piece) -> (Color) -> Array<Direction> =
         }
     }
 
-// 재귀로 여러번 돌려야 할듯. 벡터도 아님.. 벡터는 방향과 크기를 가져야함
-val calculateVector: (source: Coord) -> (dest: Coord) -> Direction? =
-    { source ->
-        { dest ->
-            Direction.values().find { applyDirection(it)(source) == dest }
-        }
+fun getAngle(source: Coord, target: Coord): Float {
+    var angle = toDegrees(
+        atan2(
+            target.rank.toDouble() - source.rank.toDouble(),
+            target.file.toDouble() - source.file.toDouble()
+        )
+    ).toFloat()
+    if (angle < 0) {
+        angle += 360f
     }
+    return floor(angle)
+}
